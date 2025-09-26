@@ -21,10 +21,27 @@ jobs:
           role-to-assume: arn:aws:iam::129774657012:role/GitHubDeployRole
           aws-region: us-west-2
 
-      - name: Deploy app via SSM
+      - name: Create file locally
+        run: |
+          echo "Hello from GitHub Actions" > testfile.txt
+          cat testfile.txt
+
+      - name: Get EC2 instance ID
+        id: get_instance
         run: |
           INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=Test" \
+            --filters "Name=tag:Name,Values=Test" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
           echo "Instance ID: $INSTANCE_ID"
+          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+
+      - name: Transfer file to EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=instanceIds,Values=$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Copy testfile.txt to /tmp" \
+            --parameters 'commands=["cat > /tmp/testfile.txt <<EOF
+          '"$(cat testfile.txt)"'
+          EOF"]'
