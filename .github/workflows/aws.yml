@@ -27,3 +27,4 @@ jobs:
             --filters "Name=tag:Name,Values=Test" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
+          echo "Instance ID: $INSTANCE_ID"
