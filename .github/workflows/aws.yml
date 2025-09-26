@@ -24,6 +24,6 @@ jobs:
       - name: Deploy app via SSM
         run: |
           INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=AppServer" \
+            --filters "Name=tag:Name,Values=Test" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
