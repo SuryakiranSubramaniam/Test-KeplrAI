@@ -47,7 +47,7 @@ jobs:
             --parameters 'commands=[
               "mkdir -p /tmp/fd",
               "aws s3 cp s3://testbucket123surya-123/test.tar /tmp/test.tar",
-              "tar -xzf /tmp/test.tar -C /tmp/fd"
+              "tar -xf /tmp/test.tar -C /tmp/fd"
             ]' \
             --query "Command.CommandId" \
             --output text)
