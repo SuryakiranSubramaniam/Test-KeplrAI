@@ -33,30 +33,28 @@ jobs:
             --filters "Name=tag:Name,Values=Test-ec2" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
-          echo "Instance ID: $INSTANCE_ID"
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
       - name: Upload build to S3
         run: aws s3 cp test.tar s3://testbucket123surya-123/test.tar
 
-      - name: Transfer file to EC2 via SSM
+      - name: Deploy build to EC2 via SSM
         run: |
-          aws ssm send-command \
+          COMMAND_ID=$(aws ssm send-command \
             --targets "Key=instanceIds,Values=$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy build" \
             --parameters 'commands=[
+              "mkdir -p /tmp/fd",
               "aws s3 cp s3://testbucket123surya-123/test.tar /tmp/test.tar",
-              "cd /tmp",
-              "tar -xzf test.tar -C /tmp/fd"
-            ]'
+              "tar -xzf /tmp/test.tar -C /tmp/fd"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
 
-      - name: Transfer file to EC2 via SSM
-        run: |
-          aws ssm send-command \
-            --targets "Key=instanceIds,Values=$INSTANCE_ID" \
-            --document-name "AWS-RunShellScript" \
-            --comment "Copy testfile.txt to /tmp" \
-            --parameters 'commands=["cat > /tmp/testfile.txt <<EOF
-'"$(cat testfile.txt)"'
-EOF"]'
+          echo "Waiting for SSM command $COMMAND_ID to complete..."
+          aws ssm wait command-executed --command-id $COMMAND_ID --instance-id $INSTANCE_ID
+
+          aws ssm get-command-invocation --command-id $COMMAND_ID --instance-id $INSTANCE_ID
+
+
