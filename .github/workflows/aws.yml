@@ -48,7 +48,7 @@ jobs:
             --parameters 'commands=[
               "aws s3 cp s3://testbucket123surya-123/test.tar /tmp/test.tar",
               "cd /tmp",
-              "tar -xzf build.tar.gz -C /tmp/fd"
+              "tar -xzf test.tar -C /tmp/fd"
             ]'
 
 
