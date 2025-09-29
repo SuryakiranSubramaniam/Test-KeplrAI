@@ -35,13 +35,21 @@ jobs:
             --output text)
           echo "Instance ID: $INSTANCE_ID"
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+      - name: Upload build to S3
+        run: aws s3 cp test.tar s3://testbucket123surya-123/test.tar
           
       - name: Transfer file to EC2 via SSM
         run: |
+        
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --comment "Copy test.tar to /tmp"
+            --comment "Deploy build" \
+            --parameters 'commands=[
+              "aws s3 cp s3://testbucket123surya-123/test.tar /tmp/test.tar",
+              "cd /tmp",
+              "tar -xzf build.tar.gz -C /tmp/fd"
+            ]'
 
 
       - name: Transfer file to EC2 via SSM
