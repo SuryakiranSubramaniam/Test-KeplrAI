@@ -30,7 +30,7 @@ jobs:
         id: get_instance
         run: |
           INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=Test" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Name,Values=Test-ec2" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
           echo "Instance ID: $INSTANCE_ID"
