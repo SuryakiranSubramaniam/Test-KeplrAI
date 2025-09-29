@@ -35,6 +35,14 @@ jobs:
             --output text)
           echo "Instance ID: $INSTANCE_ID"
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+          
+      - name: Transfer file to EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=instanceIds,Values=$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Copy test.tar to /tmp"
+
 
       - name: Transfer file to EC2 via SSM
         run: |
